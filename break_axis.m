@@ -60,7 +60,7 @@ if strcmp(xy, 'x')
     
     % Reset if a position was given
     if position < Inf
-        lims = get(gca, 'xlim');
+        lims = get(ax, 'xlim');
         cent = pos(1) + pos(3) * (position - lims(1))/(diff(lims));
     end
     
@@ -86,7 +86,7 @@ elseif strcmp(xy, 'y')
     
     % Reset if a position was given
     if position < Inf
-        lims = get(gca, 'ylim');
+        lims = get(ax, 'ylim');
         cent = pos(2) + pos(4) * (position - lims(1))/(diff(lims));
     end
     
@@ -110,9 +110,9 @@ h1.FaceColor = 'w';
 h1.Color = 'w';
 
 % Reset the bottom value
-if strcmp(bottom_reset, '')
+if ~isempty(bottom_reset)
     list = get(ax, [xy 'ticklabel']);
     list(1) = {bottom_reset};
-    set(gca, [xy 'ticklabel'], list);
+    set(ax, [xy 'ticklabel'], list);
 end
 
