@@ -14,41 +14,67 @@ function break_axis(varargin)
 % Default values
 ax = gca;
 extent = 0.5;
-width = get(ax, 'ticklength');
-width = width(1)*2;
 bottom_reset = '';
 xy = 'y';
 position = Inf;
 
 % Overwrite with what was fed in
+if mod(nargin, 2) ~= 0
+    error('Options must be supplied as name/value pairs.');
+end
 if nargin > 0
     for i=1:2:length(varargin)
-        if strcmp(varargin(i), 'handle')
+        if strcmp(varargin{i}, 'handle')
             ax = cell2mat(varargin(i+1));
-        end
-        if strcmp(varargin(i), 'length')
+        elseif strcmp(varargin{i}, 'length')
             extent = cell2mat(varargin(i+1));
-        end
-        if strcmp(varargin(i), 'axis')
+        elseif strcmp(varargin{i}, 'axis')
             xy = cell2mat(varargin(i+1));
-        end
-        if strcmp(varargin(i), 'bottom_reset')
+        elseif strcmp(varargin{i}, 'bottom_reset')
             bottom_reset = cell2mat(varargin(i+1));
-        end
-        if strcmp(varargin(i), 'position')
+        elseif strcmp(varargin{i}, 'position')
             position = cell2mat(varargin(i+1));
+        else
+            error('Unrecognized option: %s', char(varargin{i}));
         end
     end
 end
+
+if ~ishandle(ax) || ~strcmp(get(ax, 'Type'), 'axes')
+    error('The handle option must identify an axes.');
+end
+if ~strcmp(xy, 'x') && ~strcmp(xy, 'y')
+    error('The axis option must be ''x'' or ''y''.');
+end
+if ~isnumeric(extent) || ~isscalar(extent) || ~isfinite(extent) || extent <= 0 || extent > 1
+    error('The length option must be a number between 0 and 1.');
+end
+if ~isnumeric(position) || ~isscalar(position) || ~(isfinite(position) || position == Inf)
+    error('The position option must be a finite number.');
+end
+if ~strcmp(get(ax, [xy 'Scale']), 'linear')
+    error('Axis breaks currently require a linear axis scale.');
+end
+width = get(ax, 'TickLength');
+width = width(1)*2;
        
 %% Do the things
 
 % Get figure handle
-f = get(ax, 'parent');
+f = ancestor(ax, 'figure');
 
-% Get number of ticks
-n = length(get(ax, strcat(xy, 'ticklabel'))) - 1;
-pos = get(ax, 'position');
+% Annotation coordinates are normalized to the figure, including when the
+% axes live inside a panel or tiled layout.
+ax_pixels = getpixelposition(ax, true);
+figure_pixels = getpixelposition(f);
+pos = [ax_pixels(1:2)./figure_pixels(3:4), ...
+       ax_pixels(3:4)./figure_pixels(3:4)];
+
+% Get number of tick intervals
+n = numel(get(ax, [xy 'Tick'])) - 1;
+if n < 1
+    error('The selected axis must have at least two ticks.');
+end
 
 if strcmp(xy, 'x')
     
@@ -56,12 +82,16 @@ if strcmp(xy, 'x')
     spacing = pos(3)/n;
     
     % Find the center along the axis
-    cent = pos(2) + 0.5*spacing;
+    cent = pos(1) + 0.5*spacing;
     
     % Reset if a position was given
     if position < Inf
         lims = get(ax, 'xlim');
-        cent = pos(1) + pos(3) * (position - lims(1))/(diff(lims));
+        fraction = (position - lims(1))/diff(lims);
+        if strcmp(get(ax, 'XDir'), 'reverse')
+            fraction = 1 - fraction;
+        end
+        cent = pos(1) + pos(3) * fraction;
     end
     
     % define the extents of the bar
@@ -87,7 +117,11 @@ elseif strcmp(xy, 'y')
     % Reset if a position was given
     if position < Inf
         lims = get(ax, 'ylim');
-        cent = pos(2) + pos(4) * (position - lims(1))/(diff(lims));
+        fraction = (position - lims(1))/diff(lims);
+        if strcmp(get(ax, 'YDir'), 'reverse')
+            fraction = 1 - fraction;
+        end
+        cent = pos(2) + pos(4) * fraction;
     end
     
     % define the extents of the bar
@@ -111,7 +145,7 @@ h1.Color = 'w';
 
 % Reset the bottom value
 if ~isempty(bottom_reset)
-    list = get(ax, [xy 'ticklabel']);
+    list = cellstr(get(ax, [xy 'ticklabel']));
     list(1) = {bottom_reset};
     set(ax, [xy 'ticklabel'], list);
 end
