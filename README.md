@@ -19,7 +19,8 @@ Place `break_axis.m` on your MATLAB path. Options are name/value pairs:
 - `'length'`: mark length as a fraction of tick spacing (default: `0.5`)
 - `'bottom_reset'`: optional replacement for the first displayed tick label
 
-The annotation is placed using the current figure layout. If you resize the
+The selected axis must use a linear scale and have at least two ticks. The
+annotation is placed using the current figure layout. If you resize the
 figure or change the axes limits after calling the function, redraw the break.
 
 Run `test_break_axis` from this folder for a basic behavior check. The GitHub
