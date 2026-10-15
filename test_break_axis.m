@@ -1,6 +1,7 @@
 fig = figure('Visible', 'off');
 ax = axes('Parent', fig);
 plot(ax, 1:3, [1 2 3]);
+legendHandle = legend(ax, 'line');
 set(ax, 'YTick', [1 2 3], 'YTickLabel', {'1', '2', '3'});
 
 % The break is a visual annotation; it does not change plotted data.
@@ -10,6 +11,8 @@ break_axis('handle', ax, 'axis', 'y', 'bottom_reset', 'start');
 labels = cellstr(get(ax, 'YTickLabel'));
 assert(strcmp(labels{1}, 'start'));
 assert(isequal(get(line_before, 'YData'), y_before));
+assert(isvalid(legendHandle));
+assert(strcmp(legendHandle.Visible, 'on'));
 close(fig);
 
 %% Scatter data and its legend survive the visual annotation
