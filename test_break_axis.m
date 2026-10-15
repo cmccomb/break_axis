@@ -12,6 +12,19 @@ assert(strcmp(labels{1}, 'start'));
 assert(isequal(get(line_before, 'YData'), y_before));
 close(fig);
 
+%% Scatter data and its legend survive the visual annotation
+fig = figure('Visible', 'off');
+ax = axes('Parent', fig);
+points = scatter(ax, 1:3, [1 2 3]);
+legendHandle = legend(ax, 'points');
+set(ax, 'YTick', [1 2 3]);
+break_axis('handle', ax, 'axis', 'y', 'position', 2);
+assert(isvalid(points));
+assert(isvalid(legendHandle));
+assert(strcmp(legendHandle.Visible, 'on'));
+assert(isequal(points.YData, [1 2 3]));
+close(fig);
+
 %% The default x break is placed relative to the x position of the axes
 fig = figure('Visible', 'off');
 ax = axes('Parent', fig, 'Position', [0.15 0.6 0.5 0.3]);
