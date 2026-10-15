@@ -4,7 +4,9 @@
 
 `break_axis` draws a white gap and break marks over an existing x or y axis.
 **It is visual only:** it does not change the axis scale, plotted data, or
-coordinates. Do not use it to imply that values were rescaled.
+coordinates. It does not remove a range or zoom into the data. Use it only
+when a visual break mark is appropriate, and do not imply that values were
+rescaled. It works with line and scatter plots without modifying their data.
 
 ```matlab
 plot(1:5, [1 2 3 4 5]);
